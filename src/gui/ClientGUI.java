@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  */
 public class ClientGUI extends javax.swing.JFrame implements Observer {
 
-    EchoClient client;
+    private  EchoClient client;
 
     /**
      * Create GUI. Create client and add the GUI as observer. Connect client to
@@ -90,8 +90,8 @@ public class ClientGUI extends javax.swing.JFrame implements Observer {
          * When send-button is clicked, create a new thread for the client. Get
          * the text from the text-field and clear it.
          */
-        Thread t1 = new Thread(client);
-        t1.start();
+//        Thread t1 = new Thread(client);
+//        t1.start();
         client.send(jTextField_input.getText());
         jTextField_input.setText("");
     }//GEN-LAST:event_jButton_sendActionPerformed

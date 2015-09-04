@@ -11,6 +11,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import shared.ProtocolStrings;
 
+/**
+ * @author Tobias Jacobsen
+ */
 public class EchoClient extends Observable implements Runnable {
 
     Socket socket;
@@ -18,6 +21,7 @@ public class EchoClient extends Observable implements Runnable {
     private InetAddress serverAddress;
     private Scanner input;
     private PrintWriter output;
+    private String msg = "";
 
     public void connect(String address, int port) throws UnknownHostException, IOException {
         this.port = port;
@@ -25,6 +29,7 @@ public class EchoClient extends Observable implements Runnable {
         socket = new Socket(serverAddress, port);
         input = new Scanner(socket.getInputStream());
         output = new PrintWriter(socket.getOutputStream(), true);  //Set to true, to get auto flush behaviour
+        run();
     }
 
     public void send(String msg) {
@@ -37,27 +42,24 @@ public class EchoClient extends Observable implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            String msg = "";
-            try {
-                /*if (input.hasNext()) {*/
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
                     msg = input.nextLine();
+                    if (msg.equals(ProtocolStrings.STOP)) {
+                        try {
+                            socket.close();
+                        } catch (IOException ex) {
+                            Logger.getLogger(EchoClient.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
                     setChanged();
-                    notifyObservers(msg); 
-              /*  }*/
-            } catch (IndexOutOfBoundsException e) {
-                System.out.println("Noget gik galt...");
-                break;
-            }
-
-            if (msg.equals(ProtocolStrings.STOP)) {
-                try {
-                    socket.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(EchoClient.class.getName()).log(Level.SEVERE, null, ex);
+                    notifyObservers(msg);
                 }
             }
-       }
+        });
+        t.start();
     }
 
     public static void main(String[] args) {

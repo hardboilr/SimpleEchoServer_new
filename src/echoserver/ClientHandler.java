@@ -22,6 +22,8 @@ public class ClientHandler extends Thread {
     public ClientHandler(Socket socket, EchoServer echoserver) throws IOException {
         this.socket = socket;
         this.echoserver = echoserver;
+        input = new Scanner(socket.getInputStream());
+        writer = new PrintWriter(socket.getOutputStream(), true);
     }
 
     public void send(String message) {
@@ -31,21 +33,12 @@ public class ClientHandler extends Thread {
     @Override
     public void run() {
         try {
-            input = new Scanner(socket.getInputStream());
-            
-            writer = new PrintWriter(socket.getOutputStream(), true);
-            
             String message = input.nextLine(); //IMPORTANT blocking call
-            
             Logger.getLogger(EchoServer.class.getName()).log(Level.INFO, String.format("Received the message: %1$S ", message));
-
-            echoserver.send(message);
-
             while (!message.equals(ProtocolStrings.STOP)) {
-//                writer.println(message.toUpperCase());
+                echoserver.send(message);
                 Logger.getLogger(EchoServer.class.getName()).log(Level.INFO, String.format("Received the message: %1$S ", message.toUpperCase()));
                 message = input.nextLine(); //IMPORTANT blocking call
-                echoserver.send(message);
             }
             writer.println(ProtocolStrings.STOP);//Echo the stop message back to the client for a nice closedown
             socket.close();
